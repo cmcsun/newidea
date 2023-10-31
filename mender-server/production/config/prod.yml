@@ -48,8 +48,9 @@ services:
     mender-api-gateway:
         ports:
             # list of ports API gateway is made available on
-            - "8084:8084"
-            - "8082:8082"
+            - "443:443"
+            - "8080:8080"
+            - "80:80"
         networks:
             web:
             mender:
@@ -61,13 +62,13 @@ services:
                     # if devices and deployments will access storage
                     # using https://s3.acme.org, then
                     # set this to s3.acme.org
-                    - ”mender.traefik.sobe.name”
+                    - ”traefik.sobe.name”
         command:
             - --accesslog=true
-            - --entrypoints.http.address=:8082
+            - --entrypoints.http.address=:80
             - --entrypoints.http.http.redirections.entryPoint.scheme=https
             - --entrypoints.http.http.redirections.entryPoint.to=https
-            - --entrypoints.https.address=:8084
+            - --entrypoints.https.address=:443
             - --entryPoints.https.transport.respondingTimeouts.idleTimeout=7200
             - --entryPoints.https.transport.respondingTimeouts.readTimeout=7200
             - --entryPoints.https.transport.respondingTimeouts.writeTimeout=7200
@@ -90,7 +91,7 @@ services:
                 max-size: "50m"
         environment:
             # ALLOWED_HOSTS is a comma-separated list of allowed hostnames
-            ALLOWED_HOSTS: "mender.traefik.sobe.name"
+            ALLOWED_HOSTS: "traefik.sobe.name"
 
     mender-deployments:
         command: server --automigrate
@@ -101,13 +102,13 @@ services:
             # access key, the same value as MINIO_ACCESS_KEY
             DEPLOYMENTS_AWS_AUTH_KEY: mender-deployments
             # secret, the same valie as MINIO_SECRET_KEY
-            DEPLOYMENTS_AWS_AUTH_SECRET: chais3pieShiec2k
+            DEPLOYMENTS_AWS_AUTH_SECRET: Eiviuzoh9rahlian
 
             # deployments service uses signed URLs, hence it needs to access
             # storage-proxy using exactly the same name as devices will; if
             # devices will access storage using https://s3.acme.org, then
             # set this to https://s3.acme.org
-            DEPLOYMENTS_AWS_EXTERNAL_URI: https://”mender.traefik.sobe.name”:9000
+            DEPLOYMENTS_AWS_EXTERNAL_URI: https://”traefik.sobe.name”:9000
             DEPLOYMENTS_AWS_URI: http://minio:9000
         logging:
             options:
@@ -119,7 +120,7 @@ services:
             # access key
             MINIO_ACCESS_KEY: mender-deployments
             # secret
-            MINIO_SECRET_KEY: chais3pieShiec2k
+            MINIO_SECRET_KEY: Eiviuzoh9rahlian
         volumes:
             # mounts a docker volume named `mender-artifacts` as /export directory
             - mender-artifacts:/export:rw

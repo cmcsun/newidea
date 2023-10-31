@@ -25,8 +25,8 @@ services:
       - "traefik.http.routers.nginx.rule=HostRegexp('{domain:.+)')"
       - "traefik.http.routers.nginx.priority=1"
       - "traefik.http.routers.nginx.service=nginx"
-      - "traefik.http.services.nginx.loadbalancer.server.port=8082"
-      - "traefik.http.services.nginx.loadbalancer.server.port=8083"
+      - "traefik.http.services.nginx.loadbalancer.server.port=80"
+      - "traefik.http.services.nginx.loadbalancer.server.port=443"
 
   certbot:
     image: certbot/certbot:latest

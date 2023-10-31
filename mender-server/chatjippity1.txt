@@ -11,7 +11,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
         labels:
@@ -27,7 +26,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
         labels:
@@ -43,7 +41,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         environment:
             - GATEWAY_IP
             - INTEGRATION_VERSION
@@ -53,26 +50,19 @@ services:
             - HAVE_DEVICECONNECT=1
             - HAVE_DEVICECONFIG=1
     mender-api-gateway:
-        image: traefik:latest
+        image: traefik:v2.8
         ports:
           - "80:80"
           - "443:443"
-          - "8080:8080"
         extends:
             file: common.yml
             service: mender-base
         # Enables the web UI and tells Traefik to listen to docker
         command:
-            - --log.level=DEBUG
             - --accesslog=true
-            - --api.insecure=true
-            - "traefik.web.services.traefik-dashboard.loadbalancer.server.port=8080"
-            - "traefik.web.routers.traefik-dashboard-http.entrypoints=web"
-            - "traefik.web.routers.traefik-dashboard-http.rule=Host(`dashboard.localhost`)"
-            - "traefik.docker.network=web"
             - --entrypoints.http.address=:80
-            - --entrypoints.http.redirections.entryPoint.scheme=https
-            - --entrypoints.http.redirections.entryPoint.to=https
+            - --entrypoints.http.http.redirections.entryPoint.scheme=https
+            - --entrypoints.http.http.redirections.entryPoint.to=https
             - --entrypoints.https.address=:443
             - --entryPoints.https.transport.respondingTimeouts.idleTimeout=7200
             - --entryPoints.https.transport.respondingTimeouts.readTimeout=7200
@@ -130,7 +120,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
             - mender-workflows-server
@@ -147,7 +136,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
         labels:
@@ -163,7 +151,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
         labels:
@@ -181,7 +168,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
             - mender-nats
@@ -205,7 +191,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
             - mender-nats
@@ -224,7 +209,6 @@ services:
             - CREATE_ARTIFACT_DEPLOYMENTS_URL=http://mender-deployments:8080
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
             - mender-nats
@@ -240,7 +224,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
             - mender-nats
@@ -260,7 +243,6 @@ services:
             service: mender-base
         networks:
             - mender
-            - web
         depends_on:
             - mender-mongo
         command: server --automigrate
@@ -273,7 +255,6 @@ services:
             file: common.yml
             service: mender-base
         networks:
-            web:
             mender:
                 aliases:
                     - mongo-tenantadm
@@ -288,7 +269,6 @@ services:
         command: -js
         networks:
             - mender
-            - web
     mongodb:
         restart: always
         container_name: mongodb
@@ -303,7 +283,6 @@ services:
             - 27017
         networks:
             - meshcentral-tier
-            - web
     meshcentral:
         restart: always
         container_name: meshcentral
@@ -324,10 +303,10 @@ services:
             - ../meshcentral/web:/opt/meshcentral/meshcentral-web
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.meshcentral-web.rule=Host(`mesh.traefik.sobe.name/mesh/`)"
+            - "traefik.http.routers.meshcentral-web.rule=Host(`mesh.traefik.sobe.name`)"
             - "traefik.http.routers.meshcentral-web.entrypoints=http"
             #- "traefik.http.routers.meshcentral-web.middlewares=redirect@file"
-            - "traefik.http.routers.meshcentral-secured.rule=Host(`mesh.traefik.sobe.name/mesh/`)"
+            - "traefik.http.routers.meshcentral-secured.rule=Host(`mesh.traefik.sobe.name`)"
             - "traefik.http.routers.meshcentral-secured.entrypoints=https"
             - "traefik.http.routers.meshcentral-secured.tls.certresolver=mytlschallenge"
             - "traefik.http.services.meshcentral.loadbalancer.server.port=4430"

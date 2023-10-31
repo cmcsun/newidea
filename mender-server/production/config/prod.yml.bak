@@ -1,16 +1,3 @@
-# this is a template file for production setup, consult
-# https://docs.docker.com/compose/compose-file/ for details on syntax and usage
-#
-# Notes:
-# - integration/docker-compose.yml file is assumed to be included
-# - integration/docker-compose.storage.minio.yml is assumed to be included
-# - all services are part of `mender` network (service names are unchanged)
-# - keys and certificates are generated using keygen utility from integration
-#   repository, keys and certificates are stored in ./keys-generated directory
-# - certificates and key are mounted into containers using volumes
-# - minio artifacts are stored in a named volume `mender-artifacts`; volume
-#   needs to be created manually using `docker volume create mender-artifacts`
-
 # related compose bugs:
 # - https://github.com/docker/compose/issues/3874
 # - https://github.com/docker/compose/issues/3568
@@ -61,8 +48,8 @@ services:
     mender-api-gateway:
         ports:
             # list of ports API gateway is made available on
-            - "8084:8084"
-            - "8082:8082"
+          - "443:443"
+          - "80:80"
         networks:
             web:
             mender:
@@ -91,13 +78,10 @@ services:
             - ./config/traefik/traefik.tls.yaml:/etc/traefik/config/traefik.tls.yaml:ro
             - ./production/keys-generated/cert/cert.crt:/etc/traefik/certs/cert.crt:ro
             - ./production/keys-generated/cert/private.key:/etc/traefik/certs/private.key:ro
-              #        labels:
-              #- "traefik.enable=true"
-              #- "traefik.http.routers.mender-secured.rule=Host(`mender.traefik.sobe.name`)"
-              #- "traefik.http.routers.mender-secured.entrypoints=web-secured"
-              #- "traefik.http.routers.mender-secured.tls.certresolver=mytlschallenge"
-              #- "traefik.http.services.mender.loadbalancer.server.port=8084"
-              #- "traefik.docker.network=web"
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=web"
+
 
 
         logging:
@@ -117,7 +101,7 @@ services:
             # access key, the same value as MINIO_ACCESS_KEY
             DEPLOYMENTS_AWS_AUTH_KEY: mender-deployments
             # secret, the same valie as MINIO_SECRET_KEY
-            DEPLOYMENTS_AWS_AUTH_SECRET: chais3pieShiec2k
+            DEPLOYMENTS_AWS_AUTH_SECRET: Eiviuzoh9rahlian
 
             # deployments service uses signed URLs, hence it needs to access
             # storage-proxy using exactly the same name as devices will; if
@@ -135,7 +119,7 @@ services:
             # access key
             MINIO_ACCESS_KEY: mender-deployments
             # secret
-            MINIO_SECRET_KEY: chais3pieShiec2k
+            MINIO_SECRET_KEY: Eiviuzoh9rahlian
         volumes:
             # mounts a docker volume named `mender-artifacts` as /export directory
             - mender-artifacts:/export:rw
