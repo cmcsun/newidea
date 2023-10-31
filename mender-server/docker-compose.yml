@@ -79,7 +79,6 @@ services:
             - --entryPoints.https.transport.respondingTimeouts.writeTimeout=7200
             - --providers.docker=true
             - --providers.docker.network=web
-            - --providers.file.filename=/../dynamic.yml
             - --providers.file.directory=/etc/traefik/config
             - --log.level=DEBUG
             #  Enable ACME (Let's Encrypt): automatic SSL.
@@ -104,10 +103,9 @@ services:
             - ./config/traefik/traefik.yaml:/etc/traefik/config/traefik.yaml:ro
             - ./config/traefik/traefik.middlewares.yaml:/etc/traefik/config/traefik.middlewares.yaml:ro
             - ./letsencrypt:/letsencrypt
-            - ../dynamic.yml:/dynamic.yml
-
         networks:
             - mender
+            - meshcentral-tier
             - web
         # critical - otherwise nginx may not detect
         # these servers and exits with 'upstream server not found'
@@ -116,6 +114,23 @@ services:
             - mender-gui
             - mender-useradm
             - mender-inventory
+
+
+
+              #  service1:
+              #image: your_service1_image
+              #labels:
+              # - "traefik.http.routers.service1.rule=Host(`mesh.sobe.name`)"
+              # - "traefik.http.routers.service1.entrypoints=web"
+              #- "traefik.http.services.service1.loadbalancer.server.port=YOUR_SERVICE1_PORT"
+
+              #service2:
+              #image: your_service2_image
+              #labels:
+              #- "traefik.http.routers.service2.rule=Host(`service2.yourdomain.com`)"
+              #- "traefik.http.routers.service2.entrypoints=web"
+              #- "traefik.http.services.service2.loadbalancer.server.port=YOUR_SERVICE2_PORT"
+
 
 
     #
@@ -324,14 +339,15 @@ services:
             - ../meshcentral/web:/opt/meshcentral/meshcentral-web
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.meshcentral-web.rule=Host(`mesh.traefik.sobe.name/mesh/`)"
-            - "traefik.http.routers.meshcentral-web.entrypoints=http"
-            #- "traefik.http.routers.meshcentral-web.middlewares=redirect@file"
-            - "traefik.http.routers.meshcentral-secured.rule=Host(`mesh.traefik.sobe.name/mesh/`)"
-            - "traefik.http.routers.meshcentral-secured.entrypoints=https"
-            - "traefik.http.routers.meshcentral-secured.tls.certresolver=mytlschallenge"
+            - "traefik.http.routers.meshcentral.entrypoints=https"
+            - "traefik.http.routers.meshcentral.middlewares=redirect-sobename-sobeworld,default@file"
+            - "traefik.http.routers.meshcentral.rule=Host(`mesh.sobe.name`)"
+            - "traefik.http.routers.meshcentral.tls.certresolver=letsEncrypt"
+            - "traefik.http.routers.meshcentral.tls.options=intermediate@file"
+            - "traefik.http.routers.meshcentral.tls=true"
             - "traefik.http.services.meshcentral.loadbalancer.server.port=4430"
-            - "traefik.docker.network=web"
+            - "traefik.http.services.meshcentral.loadbalancer.sticky.cookie.httpOnly=true"
+            - "traefik.http.services.meshcentral.loadbalancer.sticky.cookie.secure=true"
         networks:
             - meshcentral-tier
             - web
